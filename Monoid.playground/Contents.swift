@@ -3,24 +3,35 @@
 class AddUserUseCase {
     let db = UserDatabase()
     
-    func add(name: String, password: String) -> User? {
-        if validate(name: name) && validate(password: password) {
-            let user = User(name: name, password: password)
-            db.create(user)
-            
-            return user
+    func add(name: String, password: String) -> Result<User, UserError> {
+        if let failure = validate(name: name) {
+            return .failure(failure)
         }
         
-        return nil
+        if let failure = validate(password: password) {
+            return .failure(failure)
+        }
+        
+        let user = User(name: name, password: password)
+        
+        return .success(db.create(user))
     }
 
-    internal func validate(name: String) -> Bool {
-        return !name.isEmpty && name.count <= 15
+    internal func validate(name: String) -> UserError? {
+        if !name.isEmpty && name.count <= 15 {
+            return nil
+        }
+        
+        return .userNameOutOfBounds
     }
 
     
-    internal func validate(password: String) -> Bool {
-        return password.count > 10
+    internal func validate(password: String) -> UserError? {
+        if password.count > 10 {
+            return nil
+        }
+        
+        return .passwordTooShort
     }
 }
 
