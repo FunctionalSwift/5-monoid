@@ -16,12 +16,20 @@ func validateName(of user: User) -> Result<User, UserError> {
     return .failure(.userNameOutOfBounds)
 }
 
-func createUser(name: String, password: String) -> Result<User, UserError> {
-    let validator = validateName && validatePassword
+func createUser(name: String, password: String, premium: Bool, newsletter: Bool) -> Result<User, UserError> {
+    let validator = UserValidator.Name && UserValidator.Password &&
+        (UserValidator.Premium || UserValidator.Newsletter)
+    let user = User(name: name, password: password, premium: premium, newsletter: newsletter)
     
-    return validator(User(name: name, password: password))
+    return validator(user)
 }
 
-let user = createUser(name: "alex", password: "functionalswift")
+let user = createUser(name: "alex", password: "functionalswift", premium: true, newsletter: false)
 
 user.map { print("SUCCESS: User created - \($0)") }
+
+
+
+
+
+
