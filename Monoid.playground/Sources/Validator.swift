@@ -1,18 +1,19 @@
 import Foundation
 
+public typealias Validator<A, E> = (A) -> Result<A, E>
+
 public func &&<A, E>(
-    _ firstValidator: @escaping (A) -> E?,
-    _ secondValidator: @escaping (A) -> E?) -> (A) -> E? {
+    _ firstValidator: @escaping Validator<A, E>,
+    _ secondValidator: @escaping Validator<A, E>) -> Validator<A, E> {
     
     return { a in
-        if let result = firstValidator(a) {
-            return result
-        }
+        let result = firstValidator(a)
         
-        if let result = secondValidator(a) {
+        switch result {
+        case .failure:
             return result
+        case let .success(a1):
+            return secondValidator(a1)
         }
-        
-        return nil
     }
 }

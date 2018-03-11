@@ -8,34 +8,27 @@ class AddUserUseCase {
         
         let validator = validateName && validatePassword
         
-        if let failure = validator(user) {
-            return .failure(failure)
-        }
-        
-        return .success(db.create(user))
+        return validator(user).map(db.create)
     }
 
-    internal func validateName(of user: User) -> UserError? {
+    internal func validateName(of user: User) -> Result<User, UserError> {
         if !user.name.isEmpty && user.name.count <= 15 {
-            return nil
+            return .success(user)
         }
         
-        return .userNameOutOfBounds
+        return .failure(.userNameOutOfBounds)
     }
     
-    internal func validatePassword(of user: User) -> UserError? {
+    internal func validatePassword(of user: User) -> Result<User, UserError> {
         if user.password.count > 10 {
-            return nil
+            return .success(user)
         }
         
-        return .passwordTooShort
+        return .failure(.passwordTooShort)
     }
-
 }
 
 let useCase = AddUserUseCase()
 
 let user = useCase.add(name: "alex", password: "functionalswift")
 user.map { print("SUCCESS: User created - \($0)") }
-
-
